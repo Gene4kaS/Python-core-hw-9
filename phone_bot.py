@@ -1,13 +1,27 @@
 phonebook = []
 
+def handler_error(func):
+    def print_error(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError as e:
+            return e.args[0]
+        except IndexError :
+            return 'Please input: name and phone'
+        except TypeError:
+            return 'Wrong type of command.'
+        except KeyError:
+            return 'Wrong name'  
+        except Exception as e:
+            return e.args  
+    return print_error
+
 def read_phonebook():
-    #global phonebook 
-    #phonebook = []
     with open('phonebook.txt') as f:
         line = f.readlines()
-    for el in line:
-        element = (el.replace('\n','')).split(' ')
-        phonebook.append({'name': element[0], 'phone': element[1]})
+    for phone_line in line:
+        contact = (phone_line.replace('\n','')).split(' ')
+        phonebook.append({'name': contact[0], 'phone': contact[1]})
 
 def add_phonebook(name, phone):
     with open('phonebook.txt', 'a') as f:
@@ -16,24 +30,22 @@ def add_phonebook(name, phone):
         read_phonebook()
 
 def change_phonebook(name, phone):
-    #global phonebook
-    for el in phonebook:
-        if el['name'].lower() == name.lower():
-              el['phone'] = phone
+    for phone_number in phonebook:
+        if phone_number['name'].lower() == name.lower():
+              phone_number['phone'] = phone
     with open('phonebook.txt', 'w') as f:
-        for el in phonebook:
-            f.write(f"{el['name']} {el['phone']}\n")
+        for phone_number in phonebook:
+            f.write(f"{phone_number['name']} {phone_number['phone']}\n")
         print(f"{name}'s phone number changed.")
         read_phonebook()
 
 def remove_phonebook(name):
-    #global phonebook
-    for element in phonebook:
-        if element['name'].lower() == name.lower():
-            phonebook.remove(element)
+    for contact in phonebook:
+        if contact['name'].lower() == name.lower():
+            phonebook.remove(contact)
     with open('phonebook.txt', 'w') as f:
-        for element in phonebook:
-            f.write(f"{element['name']} {element['phone']}\n")
+        for contact in phonebook:
+            f.write(f"{contact['name']} {contact['phone']}\n")
         print(f"{name} deleted.")
         read_phonebook()
 
@@ -46,37 +58,43 @@ def check_args(count_args=None, name=None, phone=None, *args):
             raise ValueError('Write the name and phone, please')
     return True
 
-def func_hello():
-    print('How can I help you?')
-    return True
 
+@handler_error
+def func_hello():
+    return 'How can I help you?'
+
+@handler_error
 def func_exit():
     print('Good bye!')
     exit()
-    return True
 
+@handler_error
 def func_add(name=None, phone=None, *args):
     check_args(2, name, phone, *args)
     add_phonebook(name, phone)
     return True
 
+@handler_error
 def func_change(name=None, phone=None, *args):
     check_args(2, name, phone, *args)
     change_phonebook(name, phone)
     return True
 
+@handler_error
 def func_remove(name=None, *args):
     check_args(1, name, *args)
     remove_phonebook(name)
     return True
 
+@handler_error
 def func_phone(name=None, *args):
     check_args(1, name, *args)
-    for el in phonebook:
-        if el['name'].lower() == name.lower():
-            print(el['name'], ' has phone number: ', el['phone'])
+    for contacts in phonebook:
+        if contacts['name'].lower() == name.lower():
+            print(contacts['name'], ' has phone number: ', contacts['phone'])
     return True
 
+@handler_error
 def func_show_all():
     print('-'*43)
     print('|{:^20}|{:^20}|'.format('Name', 'Phone'))
@@ -97,20 +115,6 @@ def func_help():
     print('good bye || close || exit')
     return True
 
-def handler_error(func):
-    def print_error(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except ValueError as e:
-            print(e)
-            return True
-        except IndexError :
-            print('Command is wrong')
-            return True
-        except Exception as e:
-            print(e)
-            return True
-    return print_error
 
 @handler_error
 def handler(cmd):
